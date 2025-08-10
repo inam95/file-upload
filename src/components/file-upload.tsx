@@ -1,7 +1,9 @@
 import { Upload, X } from "lucide-react";
 import { motion } from "motion/react";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { useDropzone } from "react-dropzone";
+import { FieldInfo } from "./field-info";
+import type { AnyFieldApi } from "@tanstack/react-form";
 
 const mainVariant = {
   initial: {
@@ -25,18 +27,29 @@ const secondaryVariant = {
 };
 
 export const FileUpload = ({
+  value = [],
   onChange,
+  onBlur,
+  maxFiles = 5,
+  field,
 }: {
+  value?: File[];
   onChange?: (files: File[]) => void;
+  onBlur?: () => void;
+  maxFiles?: number;
+  field: AnyFieldApi;
 }) => {
-  const [files, setFiles] = useState<File[]>([]);
+  const files = value ?? [];
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (newFiles: File[]) => {
-    setFiles((prevFiles) => [...prevFiles, ...newFiles]);
-    if (onChange) {
-      onChange(newFiles);
-    }
+  const remainingSlots = Math.max(0, maxFiles - files.length);
+
+  const mergeNewFiles = (newFiles: File[]) => {
+    if (!onChange) return;
+    const accepted =
+      remainingSlots > 0 ? newFiles.slice(0, remainingSlots) : [];
+    if (accepted.length === 0) return;
+    onChange([...(files || []), ...accepted]);
   };
 
   const handleClick = () => {
@@ -46,14 +59,16 @@ export const FileUpload = ({
   const { getRootProps, isDragActive } = useDropzone({
     multiple: true,
     noClick: true,
-    onDrop: handleFileChange,
+    maxFiles: remainingSlots > 0 ? remainingSlots : undefined,
+    onDrop: (droppedFiles) => mergeNewFiles(droppedFiles),
     onDropRejected: (error) => {
       console.log(error);
     },
   });
 
   const handleFileRemove = (idx: number) => {
-    setFiles((prevFiles) => prevFiles.filter((_, i) => i !== idx));
+    if (!onChange) return;
+    onChange(files.filter((_, i) => i !== idx));
   };
 
   return (
@@ -63,6 +78,7 @@ export const FileUpload = ({
     >
       <motion.div
         onClick={handleClick}
+        onBlur={onBlur}
         whileHover="animate"
         className="py-10 px-4 group/file block rounded-lg cursor-pointer w-full relative overflow-hidden"
       >
@@ -70,7 +86,9 @@ export const FileUpload = ({
           ref={fileInputRef}
           id="file-upload-handle"
           type="file"
-          onChange={(e) => handleFileChange(Array.from(e.target.files || []))}
+          multiple
+          onBlur={onBlur}
+          onChange={(e) => mergeNewFiles(Array.from(e.target.files || []))}
           className="hidden"
         />
         <div className="flex flex-col items-center justify-center">
@@ -138,6 +156,17 @@ export const FileUpload = ({
                 className="absolute opacity-0 border border-dashed border-secondary inset-0 z-30 bg-transparent flex items-center justify-center h-16 w-16 mx-auto rounded-md"
               ></motion.div>
             )}
+          </div>
+          <div className="mt-3 w-full text-xs flex items-center justify-between text-muted-foreground">
+            <span>
+              {files.length}/{maxFiles} selected
+            </span>
+            {remainingSlots === 0 && (
+              <span className="text-muted-foreground">Max files reached</span>
+            )}
+          </div>
+          <div className="w-full text-left">
+            <FieldInfo field={field} />
           </div>
         </div>
       </motion.div>
