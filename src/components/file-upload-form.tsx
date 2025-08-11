@@ -1,11 +1,12 @@
-import { DownloadIcon, Play } from "lucide-react";
+import { Play } from "lucide-react";
 import { Button } from "./ui/button";
 import { FileUpload } from "./file-upload";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { HourglassIcon, CircleCheckBigIcon } from "lucide-react";
+import { Steps } from "./steps";
+import { Reports } from "./reports";
 
 const filesSchema = z.object({
   files: z
@@ -98,140 +99,23 @@ export const FileUploadForm = () => {
       <motion.div layout className="w-full">
         <AnimatePresence mode="wait">
           {step.started && !step.completed && (
-            <motion.div
-              key="running"
-              className="flex flex-col gap-2 p-4 w-full"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.35, ease: "easeInOut" }}
-              layout
-            >
-              <p className="text-base font-bold mb-2">Running Analysis</p>
-              <div className="flex justify-between">
-                <div className="flex gap-4 items-center">
-                  <motion.div
-                    className="flex flex-col gap-2"
-                    initial={{ opacity: 0, y: 10, visibility: "hidden" }}
-                    animate={{ opacity: 1, y: 0, visibility: "visible" }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    {!step.documentsUploaded ? (
-                      <div className="flex items-center gap-2">
-                        <HourglassIcon className="w-4 h-4 animate-spin text-primary" />
-                        <p>Uploading documents...</p>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <CircleCheckBigIcon className="w-4 h-4 text-primary" />
-                        <p>Documents Uploaded</p>
-                      </div>
-                    )}
-                  </motion.div>
-                  <motion.div
-                    className="flex flex-col gap-2"
-                    initial={{ opacity: 0, y: 10, visibility: "hidden" }}
-                    animate={{
-                      opacity: step.documentsUploaded ? 1 : 0,
-                      y: step.documentsUploaded ? 0 : 10,
-                      visibility: step.documentsUploaded ? "visible" : "hidden",
-                    }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    {!step.processed ? (
-                      <div className="flex items-center gap-2">
-                        <HourglassIcon className="w-4 h-4 animate-spin text-primary" />
-                        <p>Processing documents...</p>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <CircleCheckBigIcon className="w-4 h-4 text-primary" />
-                        <p>Documents Processed</p>
-                      </div>
-                    )}
-                  </motion.div>
-                  <motion.div
-                    className="flex flex-col gap-2"
-                    initial={{ opacity: 0, y: 10, visibility: "hidden" }}
-                    animate={{
-                      opacity: step.processed ? 1 : 0,
-                      y: step.processed ? 0 : 10,
-                      visibility: step.processed ? "visible" : "hidden",
-                    }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    {!step.generated ? (
-                      <div className="flex items-center gap-2 flex-1">
-                        <HourglassIcon className="w-4 h-4 animate-spin text-primary" />
-                        <p>Generating report...</p>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 flex-1">
-                        <CircleCheckBigIcon className="w-4 h-4 text-primary" />
-                        <p>Report Generated</p>
-                      </div>
-                    )}
-                  </motion.div>
-                </div>
-                <div className="self-end">
-                  <Button
-                    variant="outline"
-                    disabled={step.processed}
-                    onClick={() => {
-                      setStep((p) => ({
-                        ...p,
-                        started: false,
-                        documentsUploaded: false,
-                        processed: false,
-                        generated: false,
-                      }));
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
+            <Steps
+              documentsUploaded={step.documentsUploaded}
+              processed={step.processed}
+              generated={step.generated}
+              onCancel={() =>
+                setStep((p) => ({
+                  ...p,
+                  started: false,
+                  documentsUploaded: false,
+                  processed: false,
+                  generated: false,
+                  completed: false,
+                }))
+              }
+            />
           )}
-          {step.completed && (
-            <motion.div
-              key="generated"
-              className="w-full"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.35, ease: "easeInOut" }}
-              layout
-            >
-              <p className="text-base font-bold mb-2">Generated Reports</p>
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-2 justify-between">
-                  <p>Report 1</p>
-                  <Button variant="ghost" size="sm">
-                    <DownloadIcon className="w-2 h-2" />
-                  </Button>
-                </div>
-                <div className="flex items-center gap-2 justify-between">
-                  <p>Report 2</p>
-                  <Button variant="ghost" size="sm">
-                    <DownloadIcon className="w-2 h-2" />
-                  </Button>
-                </div>
-                <div className="flex items-center gap-2 justify-between">
-                  <p>Report 2</p>
-                  <Button variant="ghost" size="sm">
-                    <DownloadIcon className="w-2 h-2" />
-                  </Button>
-                </div>
-                <div className="flex items-center gap-2 justify-between">
-                  <p>Report 2</p>
-                  <Button variant="ghost" size="sm">
-                    <DownloadIcon className="w-2 h-2" />
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
-          )}
+          {step.completed && <Reports />}
         </AnimatePresence>
       </motion.div>
     </>
