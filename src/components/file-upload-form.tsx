@@ -70,18 +70,32 @@ export const FileUploadForm = () => {
           </div>
 
           <form.Subscribe
-            selector={(state) => [state.canSubmit, state.isSubmitting]}
-            children={([canSubmit, isSubmitting]) => (
-              <Button type="submit" disabled={!canSubmit}>
-                <Play className="w-4 h-4 mr-1" />
-                {isSubmitting ? "Running..." : "Run"}
-              </Button>
-            )}
+            selector={(state) => [
+              state.canSubmit,
+              state.isSubmitting,
+              state.values.files.length,
+            ]}
+            children={([canSubmit, isSubmitting, filesLength]) => {
+              return (
+                <Button
+                  type="submit"
+                  disabled={!canSubmit || filesLength === 0}
+                >
+                  <Play className="w-4 h-4 mr-1" />
+                  {isSubmitting ? "Running..." : "Run"}
+                </Button>
+              );
+            }}
           />
         </div>
         {/* files upload section */}
         <div className="flex flex-col gap-2">
-          <p className="text-base font-bold">Upload Files</p>
+          <p className="text-base font-bold">
+            Upload Files{" "}
+            <span className="text-xs text-muted-foreground">
+              (at least 1 file is required)
+            </span>
+          </p>
           {/* file upload component */}
           <form.Field name="files">
             {(field) => (
