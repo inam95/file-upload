@@ -90,7 +90,7 @@ export const FileUploadForm = () => {
         </div>
         {/* files upload section */}
         <div className="flex flex-col gap-2">
-          <p className="text-base font-bold">
+          <p className="text-base font-bold mb-2">
             Upload Files{" "}
             <span className="text-xs text-muted-foreground">
               (at least 1 file is required)

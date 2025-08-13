@@ -53,6 +53,7 @@ export const FileUpload = ({
   };
 
   const handleClick = () => {
+    if (remainingSlots === 0) return;
     fileInputRef.current?.click();
   };
 
@@ -60,7 +61,10 @@ export const FileUpload = ({
     multiple: true,
     noClick: true,
     maxFiles: remainingSlots > 0 ? remainingSlots : undefined,
-    onDrop: (droppedFiles) => mergeNewFiles(droppedFiles),
+    onDrop: (droppedFiles) => {
+      if (remainingSlots === 0) return;
+      mergeNewFiles(droppedFiles);
+    },
     onDropRejected: (error) => {
       console.log(error);
     },
@@ -79,8 +83,12 @@ export const FileUpload = ({
       <motion.div
         onClick={handleClick}
         onBlur={onBlur}
-        whileHover="animate"
-        className="py-10 px-4 group/file block rounded-lg cursor-pointer w-full relative overflow-hidden"
+        whileHover={remainingSlots > 0 ? "animate" : undefined}
+        className={`py-10 px-4 group/file block rounded-lg w-full relative overflow-hidden ${
+          remainingSlots > 0
+            ? "cursor-pointer"
+            : "cursor-not-allowed opacity-60"
+        }`}
       >
         <input
           ref={fileInputRef}
@@ -109,12 +117,12 @@ export const FileUpload = ({
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         layout
-                        className="text-xs text-primary truncate max-w-xs"
+                        className="text-sm text-foreground truncate max-w-xs"
                       >
                         {file.name}
                       </motion.p>
                       <X
-                        className="h-4 w-4 text-primary cursor-pointer hover:text-destructive"
+                        className="h-4 w-4 text-foreground cursor-pointer hover:text-destructive"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleFileRemove(idx);
