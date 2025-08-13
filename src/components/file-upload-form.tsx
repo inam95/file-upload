@@ -3,7 +3,7 @@ import { Button } from "./ui/button";
 import { FileUpload } from "./file-upload";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Steps } from "./steps";
 import { Reports } from "./reports";
@@ -15,7 +15,22 @@ const filesSchema = z.object({
     .max(5, "Maximum 5 files are allowed"),
 });
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+const sleepWithSignal = (ms: number, signal: AbortSignal) =>
+  new Promise<void>((resolve, reject) => {
+    const onAbort = () => {
+      clearTimeout(timeoutId);
+      reject(new DOMException("Aborted", "AbortError"));
+    };
+    const timeoutId = window.setTimeout(() => {
+      signal.removeEventListener("abort", onAbort);
+      resolve();
+    }, ms);
+    if (signal.aborted) {
+      onAbort();
+      return;
+    }
+    signal.addEventListener("abort", onAbort, { once: true });
+  });
 
 export const FileUploadForm = () => {
   const [step, setStep] = useState({
@@ -25,29 +40,58 @@ export const FileUploadForm = () => {
     generated: false,
     completed: false,
   });
+  const abortRef = useRef<AbortController | null>(null);
   const form = useForm({
     defaultValues: {
       files: [] as File[],
     },
     onSubmit: async ({ value }) => {
       console.log("Submitting files", value.files);
+      const controller = new AbortController();
+      abortRef.current = controller;
 
-      // Keep the Promise pending while steps run
-      setStep((p) => ({ ...p, started: true }));
-      await sleep(1000);
+      try {
+        // Reset and start steps for a fresh run
+        setStep((p) => ({
+          ...p,
+          started: true,
+          documentsUploaded: false,
+          processed: false,
+          generated: false,
+          completed: false,
+        }));
+        await sleepWithSignal(1000, controller.signal);
 
-      setStep((p) => ({ ...p, documentsUploaded: true }));
-      await sleep(2000);
+        setStep((p) => ({ ...p, documentsUploaded: true }));
+        await sleepWithSignal(5000, controller.signal);
 
-      setStep((p) => ({ ...p, processed: true }));
-      await sleep(5000);
+        setStep((p) => ({ ...p, processed: true }));
+        await sleepWithSignal(5000, controller.signal);
 
-      setStep((p) => ({ ...p, generated: true, completed: true }));
+        setStep((p) => ({ ...p, generated: true, completed: true }));
+      } catch (err: unknown) {
+        if (!(err instanceof DOMException && err.name === "AbortError")) {
+          console.error(err);
+        }
+      } finally {
+        abortRef.current = null;
+      }
     },
     validators: {
       onChange: filesSchema,
     },
   });
+
+  const handleCancel = () => {
+    abortRef.current?.abort();
+    setStep((p) => ({
+      ...p,
+      started: false,
+      processed: false,
+      generated: false,
+      completed: false,
+    }));
+  };
 
   return (
     <>
@@ -117,16 +161,7 @@ export const FileUploadForm = () => {
               documentsUploaded={step.documentsUploaded}
               processed={step.processed}
               generated={step.generated}
-              onCancel={() =>
-                setStep((p) => ({
-                  ...p,
-                  started: false,
-                  documentsUploaded: false,
-                  processed: false,
-                  generated: false,
-                  completed: false,
-                }))
-              }
+              onCancel={handleCancel}
             />
           )}
           {step.completed && <Reports />}
