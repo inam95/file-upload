@@ -1,69 +1,98 @@
-# React + TypeScript + Vite
+## SiGTECH: File Upload Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern React + TypeScript app showcasing a drag-and-drop multi-file uploader with validation, animated progress steps, cancel support, and a generated reports view. Built with Vite and Tailwind CSS.
 
-Currently, two official plugins are available:
+### Live Demo
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- [Live Demo](https://file-upload-liard.vercel.app/)
 
-## Expanding the ESLint configuration
+### Features
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Drag-and-drop or click-to-upload
+- Multi-file selection with a configurable limit (default: 5)
+- Client-side validation with Zod and TanStack React Form
+- Animated progress steps (upload → process → generate)
+- Cancel in-progress runs
+- Example “Generated Reports” view
+- Pure front-end demo (no files are actually uploaded to a backend)
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Tech Stack
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+- React 19 + TypeScript
+- Vite 7
+- Tailwind CSS 4 (`@tailwindcss/vite`)
+- Motion (animations)
+- TanStack React Form + Zod (forms and validation)
+- React Dropzone (drag-and-drop)
+- Lucide React (icons)
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18 or newer
+- Package manager of your choice (pnpm recommended since a `pnpm-lock.yaml` is present)
+
+### Install
+
+Using pnpm:
+
+```bash
+pnpm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Using npm:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
+
+Using yarn:
+
+```bash
+yarn install
+```
+
+### Run (Development)
+
+```bash
+pnpm dev
+```
+
+Open http://localhost:5173 in your browser.
+
+### Build (Production)
+
+```bash
+pnpm build
+```
+
+### Preview Production Build
+
+```bash
+pnpm preview
+```
+
+### Lint
+
+```bash
+pnpm lint
+```
+
+## Project Structure
+
+Key files and directories:
+
+- `index.html`: App HTML entry
+- `src/`
+  - `components/file-upload.tsx`: Drag-and-drop file uploader UI
+  - `components/file-upload-form.tsx`: Form, validation, and run flow
+  - `components/steps.tsx`: Animated progress steps with cancel
+  - `components/reports.tsx`: Generated reports view
+- `vite.config.ts`: Vite config and `@` alias for `src`
+- `tsconfig*.json`: TypeScript configs
+
+## Notes
+
+- This is a front-end demo; files are not transmitted to a server.
+- The run steps are simulated with timed delays and can be cancelled.
